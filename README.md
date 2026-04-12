@@ -1,12 +1,10 @@
 # devhelper
 
-A local web dashboard for scanning and browsing Go project directories.
+A local web dashboard that lets you quickly open any of your Go projects in GoLand or Kiro with a single click.
 
-## What it does
+It scans your project directories, presents them in a sortable table at `http://localhost:9990`, and each project links directly to launch your IDE of choice. No more hunting through file dialogs or recent project lists.
 
-devhelper scans one or more directories for project roots (identified by `.git` or `go.mod`), analyzes each project, and serves an HTML report on `http://localhost:9990`. The page re-scans on every refresh, so it always reflects the current state of your projects.
-
-For each project, the report shows:
+## What it shows
 
 - Project path (collapsed to `~/...` where applicable)
 - Go module name (from `go.mod`)
@@ -14,7 +12,7 @@ For each project, the report shows:
 - Git remote origin (read directly from `.git/config`, no credential leakage)
 - Lines of code by file extension (top 5, excluding tests, dotfiles, binary files, and `go.mod`/`go.sum`)
 
-Project paths are clickable to open in GoLand or Kiro directly from the browser.
+Projects are detected by the presence of `.git` or `go.mod`. The page re-scans on every refresh.
 
 ## Usage
 
