@@ -35,13 +35,13 @@ func writeHTML(w io.Writer, projects []Project, homeDir string) {
 </style>
 </head>
 <body>
-<h1>DevHelper - Go Project Report</h1>
+<h1>DevHelper - Project Report</h1>
 `)
 
 	fmt.Fprintf(w, "<p>%d projects found</p>\n", len(projects))
 	fmt.Fprint(w, `<table>
 <thead>
-<tr><th>Project</th><th>Module</th><th>Last Modified</th><th>Git Remote</th><th>Lines of Code</th></tr>
+<tr><th>Project</th><th>IDE</th><th>Module</th><th>Last Modified</th><th>Git Remote</th><th>Lines of Code</th></tr>
 </thead>
 <tbody>
 `)
@@ -49,17 +49,35 @@ func writeHTML(w io.Writer, projects []Project, homeDir string) {
 	for _, p := range projects {
 		fmt.Fprint(w, "<tr>")
 
-		// Project path (clickable to open in GoLand, with Kiro link)
+		// Project path (clickable to open folder)
 		escapedPath := url.PathEscape(p.Path)
-		openGoland := "/open?path=" + escapedPath
-		openKiro := "/open?ide=kiro&path=" + escapedPath
-		displayPath := p.Path
-		if homeDir != "" && strings.HasPrefix(displayPath, homeDir) {
-			displayPath = "~" + displayPath[len(homeDir):]
+		openFolder := "/open?ide=xdg-open&path=" + escapedPath
+		displayPath := shortenPath(p.Path, homeDir)
+		fmt.Fprintf(w, `<td class="path"><a href="%s" style="color:inherit" title="Open folder">%s</a></td>`,
+			openFolder, html.EscapeString(displayPath))
+
+		// IDE launchers
+		fmt.Fprint(w, `<td style="white-space:nowrap">`)
+		ides := []struct {
+			Label string
+			Cmd   string
+			Title string
+		}{
+			{"G", "goland", "GoLand"},
+			{"K", "kiro", "Kiro"},
+			{"C", "clion", "CLion"},
+			{"W", "webstorm", "WebStorm"},
+			{"P", "pycharm", "PyCharm"},
 		}
-		fmt.Fprintf(w, `<td class="path"><a href="%s" style="color:inherit" title="Open in GoLand">%s</a> `+
-			`<a href="%s" title="Open in Kiro" style="color:#89b4fa;text-decoration:none;font-weight:bold;font-size:0.85em">K</a></td>`,
-			openGoland, html.EscapeString(displayPath), openKiro)
+		for i, ide := range ides {
+			if i > 0 {
+				fmt.Fprint(w, " ")
+			}
+			link := "/open?ide=" + ide.Cmd + "&path=" + escapedPath
+			fmt.Fprintf(w, `<a href="%s" title="%s" style="color:#89b4fa;text-decoration:none;font-weight:bold;font-size:0.85em">%s</a>`,
+				link, ide.Title, ide.Label)
+		}
+		fmt.Fprint(w, "</td>")
 
 		// Module name
 		fmt.Fprintf(w, `<td class="path">%s</td>`, html.EscapeString(p.ModuleName))
@@ -108,4 +126,23 @@ func formatDaysAgo(p *Project) string {
 		return fmt.Sprintf("%d days", p.DaysAgo)
 	}
 	return p.OldestMod.Format("Jan 06")
+}
+
+func shortenPath(path, homeDir string) string {
+	if homeDir == "" {
+		return path
+	}
+	projectsDir := homeDir + "/projects/"
+	golangDir := homeDir + "/golang/"
+
+	switch {
+	case strings.HasPrefix(path, projectsDir):
+		return "P " + path[len(projectsDir):]
+	case strings.HasPrefix(path, golangDir):
+		return "G " + path[len(golangDir):]
+	case strings.HasPrefix(path, homeDir):
+		return "~" + path[len(homeDir):]
+	default:
+		return path
+	}
 }
