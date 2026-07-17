@@ -1,13 +1,14 @@
 # devhelper
 
-A local web dashboard that lets you quickly open any of your Go projects in GoLand or Kiro with a single click.
+A local web dashboard that lets you quickly open any of your projects in your IDE of choice with a single click.
 
-It scans your project directories, presents them in a dark-mode table at `http://localhost:9990`, and each project links directly to launch your IDE of choice. No more hunting through file dialogs or recent project lists.
+It scans your project directories, presents them in a dark-mode table at `http://localhost:9990`, and each project has launchers for GoLand, Kiro, CLion, WebStorm, and PyCharm.
 
 ## What it shows
 
-- Project path (collapsed to `~/...`), clickable to open in GoLand or Kiro
-- Go module name (from `go.mod`)
+- Project path (abbreviated as `P <name>` for ~/projects, `G <name>` for ~/golang)
+- IDE launchers: G (GoLand), K (Kiro), C (CLion), W (WebStorm), P (PyCharm)
+- Go module name (from `go.mod`, if present)
 - Last modified date (days for recent, month/year for older)
 - Git remote origin (read from `.git/config`, clickable, no credential leakage)
 - Lines of code by file extension (top 5, excluding tests, dotfiles, binaries, and `go.mod`/`go.sum`)
@@ -47,7 +48,7 @@ On launch, devhelper starts an HTTP server on port 9990 and opens your browser a
 ## API Endpoints
 
 - `/` — project dashboard (re-scans on each request)
-- `/open?path=<dir>&ide=<goland|kiro>` — launch an IDE for the given project
+- `/open?path=<dir>&ide=<name>` — launch an IDE (goland, kiro, clion, webstorm, pycharm, or xdg-open)
 - `/quit` — gracefully shut down the running instance
 
 ## Build from source
